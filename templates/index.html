@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniRoute - Global Education Navigator</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 0; }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background-color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .logo { font-size: 24px; font-weight: bold; color: #0f4c81; text-decoration: none; }
+        .logo span { color: #f26522; }
+        .hero { background: linear-gradient(135deg, #0f4c81 0%, #1d4ed8 100%); color: white; text-align: center; padding: 60px 20px; }
+        .hero h1 { margin: 0 0 15px 0; font-size: 2.2rem; }
+        .hero p { margin: 0 0 30px 0; font-size: 1.1rem; opacity: 0.9; }
+        .search-container { max-width: 600px; margin: 0 auto; display: flex; }
+        .search-input { flex-grow: 1; padding: 12px 20px; border: none; border-radius: 6px 0 0 6px; font-size: 16px; outline: none; }
+        .search-btn { background-color: #f26522; color: white; border: none; padding: 0 25px; font-size: 16px; border-radius: 0 6px 6px 0; cursor: pointer; }
+        .filters { display: flex; justify-content: center; gap: 10px; margin: 30px 0; flex-wrap: wrap; padding: 0 10px; }
+        .filter-btn { background: white; text-decoration: none; color: #475569; padding: 10px 20px; border: 1px solid #cbd5e1; border-radius: 20px; font-weight: 500; font-size: 14px; }
+        .filter-btn.active, .filter-btn:hover { background-color: #0f4c81; color: white; border-color: #0f4c81; }
+        .course-grid { max-width: 1200px; margin: 0 auto; padding: 0 20px 40px 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .course-card { background: white; border-radius: 8px; border: 1px solid #e2e8f0; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .badge { display: inline-block; padding: 4px 8px; font-size: 12px; font-weight: bold; border-radius: 4px; margin-bottom: 10px; }
+        .badge-free { background-color: #dcfce7; color: #166534; }
+        .badge-paid { background-color: #ffedd5; color: #9a3412; }
+        .course-title { font-size: 18px; margin: 0 0 8px 0; color: #0f4c81; }
+        .course-meta { font-size: 14px; color: #64748b; margin-bottom: 15px; }
+        .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; border-top: 1px solid #f1f5f9; padding-top: 15px; }
+        .price { font-weight: bold; color: #0f4c81; }
+        .apply-btn { background-color: #0f4c81; color: white; text-decoration: none; padding: 8px 16px; border-radius: 4px; font-size: 14px; font-weight: 500; }
+        .apply-btn:hover { background-color: #f26522; }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" id="logo-trigger" class="logo">Uni<span>Route</span></a>
+        
+    </header>
+    <main>
+        <div class="hero">
+            <h1>Your Gateway to Verified Global Knowledge</h1>
+            <p>Find free world-class courses, affordable diplomas, and accredited MBAs instantly.</p>
+            <form action="/" method="GET" class="search-container">
+                <input type="text" name="q" value="{{ query }}" placeholder="Search courses, certificates, universities..." class="search-input">
+                <button type="submit" class="search-btn">Search</button>
+            </form>
+        </div>
+        <div class="filters">
+            <a href="/" class="filter-btn {% if not current_type %}active{% endif %}">All Education</a>
+            <a href="/?type=Free Course" class="filter-btn {% if current_type == 'Free Course' %}active{% endif %}">Free Courses</a>
+            <a href="/?type=Diploma" class="filter-btn {% if current_type == 'Diploma' %}active{% endif %}">Diplomas</a>
+            <a href="/?type=Degree" class="filter-btn {% if current_type == 'Degree' %}active{% endif %}">Degrees</a>
+            <a href="/?type=Certificate" class="filter-btn {% if current_type == 'Certificate' %}active{% endif %}">Certificates</a>
+            <a href="/?type=MBA" class="filter-btn {% if current_type == 'MBA' %}active{% endif %}">MBAs</a>
+        </div>
+        <div class="course-grid">
+            {% for course in courses %}
+            <div class="course-card">
+                <div>
+                    <span class="badge {% if course.cost_status == 'Free' %}badge-free{% else %}badge-paid{% endif %}">
+                        {{ course.credential_type }} {% if course.is_accredited %}• Verified Accredited{% endif %}
+                    </span>
+                    <h3 class="course-title">{{ course.title | safe }}</h3>
+                    <div class="course-meta">
+                        <div>Provided by: <strong>{{ course.provider_institution }}</strong></div>
+                        <div style="margin-top: 4px;">Via: {{ course.platform_name }}</div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span class="price">{{ course.price_detail }}</span>
+                    <a href="{{ course.direct_link }}" target="_blank" class="apply-btn">Go to Course</a>
+                </div>
+            </div>
+            {% else %}
+            <p style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 40px 0;">No tracks found matching your query details.</p>
+            {% endfor %}
+        </div>
+    </main>
+
+    <script>
+        let logoClicks = 0;
+        let logoTimer;
+        document.getElementById('logo-trigger').addEventListener('click', function(e) {
+            e.preventDefault();
+            logoClicks++;
+            clearTimeout(logoTimer);
+            if (logoClicks === 4) {
+                window.location.href = '/admin-portal';
+                logoClicks = 0;
+            }
+            logoTimer = setTimeout(() => { logoClicks = 0; }, 2000);
+        });
+    </script>
+</body>
+
+</html>

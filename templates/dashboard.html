@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniRoute Management Portal</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; }
+        nav { background: #0f4c81; color: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; }
+        .main-container { max-width: 1200px; margin: 20px auto; padding: 0 15px; display: flex; flex-direction: column; gap: 25px; }
+        @media (min-width: 768px) {
+            .main-container { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; }
+        }
+        .panel-box { background: white; border-radius: 8px; border: 1px solid #e2e8f0; padding: 25px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        h3 { margin-top: 0; color: #0f4c81; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-size: 14px; font-weight: 500; }
+        input, select { width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
+        .submit-btn { background: #f26522; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; width: 100%; }
+        .submit-btn:hover { background: #0f4c81; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+        th { background-color: #f1f5f9; color: #475569; }
+        .delete-link { color: #b91c1c; text-decoration: none; font-weight: 500; }
+        .delete-link:hover { text-decoration: underline; }
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .toolbar button { background: #fff; border: 1px solid #cbd5e1; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-weight: bold; }
+        .toolbar button.active { background: #cbd5e1; border-color: #0f4c81; color: black; }
+        .toolbar button:hover { background: #e2e8f0; }
+    </style>
+</head>
+<body>
+    <nav>
+        <h2>UniRoute Control Panel</h2>
+        <a href="/logout" style="color: white; text-decoration: none; font-weight: bold;">Exit System</a>
+    </nav>
+    <div class="main-container">
+        <div class="panel-box">
+            <h3>Index New Course Track</h3>
+            <form action="/admin/add-course" method="POST">
+                <div class="form-group">
+                    <label>Hosting Platform or School Name</label>
+                    <input type="text" name="platform_name" required placeholder="e.g., Coursera, University of the People, MIT OCW">
+                </div>
+                
+                <div class="form-group">
+                    <label>Course Title Line (Visual Style Designer)</label>
+                    <div class="toolbar" style="background: #f1f5f9; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px 6px 0 0; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                        <button type="button" id="btn-bold" onclick="toggleStyle('bold')">B</button>
+                        <button type="button" id="btn-italic" onclick="toggleStyle('italic')" style="font-style: italic;">I</button>
+                        <button type="button" id="btn-underline" onclick="toggleStyle('underline')" style="text-decoration: underline;">U</button>
+                        
+                        <select id="font-family-select" style="width:auto; padding:4px; font-size:12px;">
+                            <option value="Arial">Arial</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Courier New">Courier New</option>
+                            <option value="Georgia">Georgia</option>
+                        </select>
+                        
+                        <select id="font-size-select" style="width:auto; padding:4px; font-size:12px;">
+                            <option value="16px">Normal</option>
+                            <option value="20px">Medium</option>
+                            <option value="24px">Large</option>
+                            <option value="28px">X-Large</option>
+                        </select>
+                        
+                        <div style="display:flex; align-items:center; gap:2px;">
+                            <span style="font-size:11px;">Color:</span>
+                            <input type="color" id="font-color-picker" value="#00ff00" style="width:24px; height:24px; padding:0; border:none; background:none; cursor:pointer;">
+                        </div>
+                    </div>
+                    <!-- Typing Canvas Container -->
+                    <div id="editor-canvas" contenteditable="true" style="min-height: 80px; border: 1px solid #cbd5e1; border-top:none; border-radius: 0 0 6px 6px; padding: 12px; background: white; outline: none; font-size: 16px;"></div>
+                    <input type="hidden" name="title" id="hidden-title-input">
+                </div>
+                <div class="form-group">
+                    <label>Issuing University / Entity</label>
+                    <input type="text" name="provider_institution" required placeholder="e.g., Oxford University, Independent Study">
+                </div>
+                <div class="form-group">
+                    <label>Credential Classification</label>
+                    <select name="credential_type">
+                        <option value="Free Course">Free Course</option>
+                        <option value="Certificate">Certificate</option>
+                        <option value="Diploma">Diploma</option>
+                        <option value="Degree">Degree</option>
+                        <option value="MBA">MBA</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><input type="checkbox" name="is_accredited" value="1"> Official Global Accreditation Verified</label>
+                </div>
+                <div class="form-group">
+                    <label>Cost Level Matrix</label>
+                    <select name="cost_status">
+                        <option value="Free">Free Baseline</option>
+                        <option value="Affordable">Affordable Range</option>
+                        <option value="Paid">Premium Tier</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tuition Pricing Detail Tag</label>
+                    <input type="text" name="price_detail" required placeholder="e.g., Free or $49/Month">
+                </div>
+                <div class="form-group">
+                    <label>Target Application Link (Deep URL)</label>
+                    <input type="url" name="direct_link" required placeholder="https://example.com">
+                </div>
+                <button type="submit" class="submit-btn">Publish to Directory</button>
+            </form>
+        </div>
+        <div class="panel-box">
+            <h3>Active Registered Course Index Matrix</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title Track</th>
+                            <th>Institution</th>
+                            <th>Format</th>
+                            <th>Cost Parameter</th>
+                            <th>Management Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for course in courses %}
+                        <tr>
+                            <td><strong>{{ course.title | safe }}</strong></td>
+                            <td>{{ course.provider_institution }}</td>
+                            <td>{{ course.credential_type }}</td>
+                            <td>{{ course.price_detail }}</td>
+                            <td><a href="/admin/delete-course/{{ course.id }}" class="delete-link" onclick="return confirm('Purge this target program track entry permanently?');">Remove</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let activeStyles = { bold: false, italic: false, underline: false };
+        const canvas = document.getElementById('editor-canvas');
+
+        function toggleStyle(style) {
+            activeStyles[style] = !activeStyles[style];
+            document.getElementById(`btn-${style}`).classList.toggle('active', activeStyles[style]);
+            applyStylesToCurrentText();
+        }
+
+        // Live Opera Mini Compatibility Layer: Applies active styling elements onto the input text field dynamically
+        function applyStylesToCurrentText() {
+            let plainText = canvas.textContent || "";
+            if (plainText.length === 0) return;
+
+            const font = document.getElementById('font-family-select').value;
+            const size = document.getElementById('font-size-select').value;
+            const color = document.getElementById('font-color-picker').value;
+            
+            let css = `font-family: '${font}'; font-size: ${size}; color: ${color};`;
+            if (activeStyles.bold) css += ' font-weight: bold;';
+            if (activeStyles.italic) css += ' font-style: italic;';
+            if (activeStyles.underline) css += ' text-decoration: underline;';
+            
+            // Re-render text cleanly within styled DOM container elements
+            canvas.innerHTML = `<span style="${css}">${plainText}</span>`;
+            
+            // Maintain typing cursor focus position gracefully
+            let range = document.createRange();
+            let sel = window.getSelection();
+            range.selectNodeContents(canvas);
+            range.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(range);
+            
+            updateHiddenField();
+        }
+
+        // Sync styles instantly as the input field values change
+        canvas.addEventListener('input', updateHiddenField);
+        document.getElementById('font-family-select').addEventListener('change', applyStylesToCurrentText);
+        document.getElementById('font-size-select').addEventListener('change', applyStylesToCurrentText);
+        document.getElementById('font-color-picker').addEventListener('change', applyStylesToCurrentText);
+
+        function updateHiddenField() {
+            // If text is unstyled, wrap it in active styles automatically on form dispatch updates
+            if (canvas.children.length === 0 && canvas.textContent.length > 0) {
+                applyStylesToCurrentText();
+            }
+            document.getElementById('hidden-title-input').value = canvas.innerHTML;
+        }
+
+        document.querySelector('form').addEventListener('submit', function() {
+            updateHiddenField();
+        });
+    </script>
+</body>
+</html>
